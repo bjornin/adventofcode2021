@@ -1,0 +1,18 @@
+{
+	"name": "Erlang",
+	"build": {
+		"args": {
+			"VARIANT": "24.1.7-alpine"
+		},
+		"dockerfile": "Dockerfile"
+	},
+
+	"settings": {
+		"terminal.integrated.defaultProfile.linux": "zsh"
+	},
+
+	"extensions": [
+		"erlang-ls.erlang-ls",
+		"eamodio.gitlens"
+	],
+}
