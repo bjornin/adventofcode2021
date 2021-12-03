@@ -6,8 +6,8 @@ main() ->
 main([File]) ->
     {ok, Bin} = file:read_file(File),
     Val = parse(Bin),
-    io:format("part1: ~p~n",[travel(Val)]).
-    % io:format("part2: ~p~n",[part2(Val)]).
+    io:format("part1: ~p~n",[travel(Val)]),
+    io:format("part2: ~p~n",[travel_aim(Val)]).
 
 parse(Bin) when is_binary(Bin) ->
     Val = [X || X <- string:tokens(binary_to_list(Bin), "\n")],
@@ -29,4 +29,16 @@ move(Instruction, {Horizontal, Depth}) ->
         {down, N} -> {Horizontal, Depth + N};
         {up, N} -> {Horizontal, Depth - N};
         _ -> {Horizontal, Depth}
+    end.
+
+travel_aim(Instructions) ->
+    {X, Y, _} = lists:foldl(fun move_aim/2, {0, 0, 0}, Instructions),
+    X * Y.
+
+move_aim(Instruction, {Horizontal, Depth, Aim}) ->
+    case Instruction of
+        {forward, N} -> {Horizontal + N, Depth + Aim * N, Aim};
+        {down, N} -> {Horizontal, Depth, Aim + N};
+        {up, N} -> {Horizontal, Depth, Aim - N};
+        _ -> {Horizontal, Depth, Aim}
     end.
