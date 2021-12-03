@@ -3,11 +3,13 @@
 
 main() ->
     main(["input.txt"]).
+
 main([File]) ->
     {ok, Bin} = file:read_file(File),
     Val = parse(Bin),
     io:format("part1: ~p~n",[travel(Val)]),
-    io:format("part2: ~p~n",[travel_aim(Val)]).
+    io:format("part2: ~p~n",[travel_aim(Val)]),
+    erlang:halt(0).
 
 parse(Bin) when is_binary(Bin) ->
     Val = [X || X <- string:tokens(binary_to_list(Bin), "\n")],
