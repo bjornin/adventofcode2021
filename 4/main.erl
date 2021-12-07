@@ -7,10 +7,10 @@ main() ->
 main([File]) ->
     {ok, Bin} = file:read_file(File),
     {Numbers, Boards} = parse(Bin),
-    % io:format("part1: ~p~n", [Boards]).
     P1 = catch bingo(Numbers,Boards),
-    io:format("part1: ~p~n", [P1]).
-    % io:format("part2: ~p~n", [air_stats(Val)]).
+    io:format("part1: ~p~n", [P1]),
+    P2 = bingo2(Numbers,Boards),
+    io:format("part2: ~p~n", [P2]).
     % erlang:halt(0).
 
 parse(Bin) when is_binary(Bin) ->
@@ -55,4 +55,37 @@ check_line(N, [H|T], Acheck, Sum) ->
             _ -> check_line(N, T, Ncheck, Sum + list_to_integer(N))
         end;
         true -> check_line(N, T, Acheck, Sum)
+    end.
+
+
+bingo2(N, B) -> bingo2(N, maps:keys(B), maps:new(), B, []).
+bingo2([], _, _, _, _) -> 0;
+bingo2(_, [], _, Asum, [Last]) -> maps:get(Last, Asum) / 2;
+bingo2([H|T], B, Acheck, Asum, Last) ->
+    {Ncheck, Nsum, W} = check_board2(H, B, Acheck, Asum, []),
+    bingo2(T, B -- W, Ncheck, Nsum, W).
+
+check_board2(_, [], Acheck, Asum, W) -> {Acheck, Asum, W};
+check_board2(N, [H|T], Acheck, Asum, W) ->
+    try check_line2(N, H, Acheck, 0) of
+        {Ncheck, Nsum} ->
+            NS = maps:update_with(H, fun(V) -> V - Nsum end, Asum),
+            check_board2(N, T, Ncheck, NS, W)
+    catch
+        Winner -> 
+            io:format("~p ~n", [N]), % This is ugly. Need to make it return N to bingo
+            Nsum = maps:update_with(H, fun(V) -> V - list_to_integer(N)*2 end, Asum),
+            check_board2(N, T, Acheck, Nsum, [H|W])
+    end.
+    
+check_line2(_,[], Acheck, Sum) -> {Acheck, Sum};
+check_line2(N, [H|T], Acheck, Sum) ->
+    M = lists:member(N, H),
+    if M ->
+        Ncheck = maps:update_with(H,fun(V) -> V + 1 end, 1, Acheck),
+        case maps:get(H,Ncheck) of
+            5 -> throw({winner});
+            _ -> check_line2(N, T, Ncheck, Sum + list_to_integer(N))
+        end;
+        true -> check_line2(N, T, Acheck, Sum)
     end.
